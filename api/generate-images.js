@@ -1,5 +1,6 @@
 export default async function handler(req, res) {
 
+  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -14,15 +15,22 @@ export default async function handler(req, res) {
     });
   }
 
-  const { expenses } = req.body;
-
-  if (!expenses) {
-    return res.status(400).json({
-      error: "Data pengeluaran kosong"
-    });
-  }
-
   try {
+
+    const { expenses } = req.body;
+
+    if (!expenses) {
+      return res.status(400).json({
+        error: "Data pengeluaran kosong"
+      });
+    }
+
+    // cek API key
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        error: "OPENAI_API_KEY belum diset di Vercel"
+      });
+    }
 
     const prompt = `
 Berikut data pengeluaran mahasiswa:
@@ -46,9 +54,7 @@ Style:
 
         headers: {
           "Content-Type": "application/json",
-
-          Authorization:
-            `Bearer ${process.env.OPENAI_API_KEY}`
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
         },
 
         body: JSON.stringify({
@@ -61,20 +67,26 @@ Style:
 
     const data = await response.json();
 
+    console.log(data);
+
+    // jika API gagal
     if (!response.ok) {
 
       return res.status(response.status).json({
         error:
-          data.error?.message ||
+          data?.error?.message ||
           "Gagal membuat gambar"
       });
     }
 
+    // sukses
     return res.status(200).json({
       image: data.data[0].b64_json
     });
 
   } catch (error) {
+
+    console.error(error);
 
     return res.status(500).json({
       error: error.message

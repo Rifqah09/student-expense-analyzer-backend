@@ -30,15 +30,41 @@ export default async function handler(req, res) {
 
     // prompt gambar
     const prompt = `
-cute chibi college student,
-anime style,
-modern outfit,
-bright colors,
-happy expression,
-high quality,
-no text,
-based on these spending habits:
+Buat ilustrasi karakter mahasiswa berdasarkan hasil analisis pengeluaran berikut:
+
 ${expenses}
+
+Karakter harus menyesuaikan kondisi mahasiswa dari hasil analisis AI.
+
+Ketentuan:
+- style anime chibi
+- cute
+- modern
+- ekspresi wajah sesuai kondisi finansial
+- pakaian dan aksesoris menyesuaikan gaya hidup
+- background sederhana
+- warna cerah
+- detail dan high quality
+- tanpa teks
+
+Jika mahasiswa hemat:
+- tampil rapi
+- ceria
+- sederhana
+- membawa uang/tabungan
+
+Jika mahasiswa boros:
+- tampil panik
+- banyak kantong belanja
+- uang berkurang
+- ekspresi lucu
+
+Jika mahasiswa seimbang:
+- tampil santai
+- produktif
+- stylish mahasiswa aktif
+
+Gunakan gaya ilustrasi anime modern.
 `;
 
     // generate URL gambar AI

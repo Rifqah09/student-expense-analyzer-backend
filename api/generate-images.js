@@ -5,10 +5,12 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // OPTIONS
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
+  // hanya POST
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Gunakan method POST"
@@ -19,69 +21,35 @@ export default async function handler(req, res) {
 
     const { expenses } = req.body;
 
-    if (!expenses) {
+    // validasi input
+    if (!expenses || expenses.trim() === "") {
       return res.status(400).json({
         error: "Data pengeluaran kosong"
       });
     }
 
-    // cek API key
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        error: "OPENAI_API_KEY belum diset di Vercel"
-      });
-    }
-
+    // prompt gambar
     const prompt = `
-Berikut data pengeluaran mahasiswa:
-
+cute chibi college student,
+anime style,
+modern outfit,
+bright colors,
+happy expression,
+high quality,
+no text,
+based on these spending habits:
 ${expenses}
-
-Buat karakter mahasiswa lucu.
-
-Style:
-- chibi
-- cute
-- modern
-- warna cerah
-- tanpa teks
 `;
 
-    const response = await fetch(
-      "https://api.openai.com/v1/images/generations",
-      {
-        method: "POST",
+    // generate URL gambar AI
+    const imageUrl =
+      `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
 
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-
-        body: JSON.stringify({
-          model: "gpt-image-1",
-          prompt: prompt,
-          size: "1024x1024"
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    console.log(data);
-
-    // jika API gagal
-    if (!response.ok) {
-
-      return res.status(response.status).json({
-        error:
-          data?.error?.message ||
-          "Gagal membuat gambar"
-      });
-    }
+    console.log(imageUrl);
 
     // sukses
     return res.status(200).json({
-      image: data.data[0].b64_json
+      image: imageUrl
     });
 
   } catch (error) {
@@ -89,7 +57,7 @@ Style:
     console.error(error);
 
     return res.status(500).json({
-      error: error.message
+      error: error.message || "Gagal membuat gambar AI"
     });
   }
 }

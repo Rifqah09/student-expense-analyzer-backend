@@ -7,13 +7,18 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // =========================
   // OPTIONS
+  // =========================
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // hanya POST
+  // =========================
+  // Hanya POST
+  // =========================
   if (req.method !== "POST") {
+
     return res.status(405).json({
       error: "Gunakan method POST"
     });
@@ -21,6 +26,9 @@ export default async function handler(req, res) {
 
   try {
 
+    // =========================
+    // Ambil Data
+    // =========================
     const { activities } = req.body;
 
     // =========================
@@ -47,28 +55,29 @@ export default async function handler(req, res) {
     // Prompt AI
     // =========================
     const prompt = `
-Berikut adalah daftar aktivitas harian mahasiswa:
+Berikut adalah data aktivitas dan pengeluaran mahasiswa:
 
 ${activities}
 
 Tolong:
-1. Simpulkan pola aktivitas mahasiswa
+1. Analisis pola aktivitas mahasiswa
 2. Beri penilaian:
    - Rajin
    - Seimbang
    - Kurang Produktif
    - Perlu Evaluasi
-3. Jelaskan alasannya secara singkat
+3. Jelaskan alasan singkat
 4. Berikan 2 saran perbaikan
 
-Gunakan bahasa Indonesia yang sederhana, rapi, dan mudah dipahami.
+Gunakan bahasa Indonesia sederhana,
+rapi, dan mudah dipahami mahasiswa.
 `;
 
     // =========================
     // Request ke Gemini AI
     // =========================
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
 
@@ -77,6 +86,7 @@ Gunakan bahasa Indonesia yang sederhana, rapi, dan mudah dipahami.
         },
 
         body: JSON.stringify({
+
           contents: [
             {
               parts: [
@@ -91,6 +101,7 @@ Gunakan bahasa Indonesia yang sederhana, rapi, dan mudah dipahami.
             temperature: 0.8,
             maxOutputTokens: 500
           }
+
         })
       }
     );
